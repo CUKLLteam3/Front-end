@@ -104,3 +104,13 @@
   margin-bottom: 15px;
   color: #333;
 }
+
+.map-section.square {
+  width: 300px; /* 또는 원하는 크기 */
+  height: 300px; /* 정사각형 유지 위해 height도 명시 */
+  max-width: 80vw; /* 반응형 대응 */
+  max-height: 80vw;
+  margin: 0 auto;
+  border-radius: 1rem;
+  overflow: hidden;
+}

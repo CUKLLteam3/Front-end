@@ -14,8 +14,8 @@ const useCurrentLocation = () => {
 
     const successHandler = (position) => {
       setLocation({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
+        lat: parseFloat(position.coords.latitude.toFixed(6)),
+        lng: parseFloat(position.coords.longitude.toFixed(6))
       });
       setLoading(false);
     };
