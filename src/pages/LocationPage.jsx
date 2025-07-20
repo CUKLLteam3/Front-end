@@ -1,35 +1,65 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/LocationPage.jsx
+import React, { useState, useEffect, useRef } from 'react';
 import Map from '../components/Map/Map';
 import useCurrentLocation from '../hooks/useCurrentLocation';
-import sendLocation from '../utils/sendLocation';
 import './LocationPage.css';
 
-const LocationPage = () => {
+const LocationPage = ({ onLocationUpdate }) => {
   const { location, loading, error } = useCurrentLocation();
-  const [sendStatus, setSendStatus] = useState(null);
-  const [isSending, setIsSending] = useState(false);
+  const [showMap, setShowMap] = useState(false);
 
-  const handleLocationSend = async (lat, lng) => {
-    setIsSending(true);
-    setSendStatus(null);
-    
-    const result = await sendLocation(lat, lng);
-    
-    if (result.success) {
-      setSendStatus({ type: 'success', message: '위치가 성공적으로 전송되었습니다!' });
-    } else {
-      setSendStatus({ type: 'error', message: `전송 실패: ${result.error}` });
+  // 위치가 업데이트되면 부모 컴포넌트에 전달 (같은 좌표 반복 호출 방지)
+  const prevLocationRef = useRef(null);
+  useEffect(() => {
+    if (
+      location.lat &&
+      location.lng &&
+      onLocationUpdate &&
+      JSON.stringify(prevLocationRef.current) !== JSON.stringify(location)
+    ) {
+      onLocationUpdate(location);
+      prevLocationRef.current = location;
+      setShowMap(true);
     }
-    
-    setIsSending(false);
-    
-    // 3초 후 상태 메시지 제거
-    setTimeout(() => setSendStatus(null), 3000);
+  }, [location, onLocationUpdate]);
+
+  const [manualLocation, setManualLocation] = useState(null);
+
+  const fetchManualLocation = () => {
+    if (!navigator.geolocation) {
+      alert('이 브라우저에서는 위치 정보를 지원하지 않습니다.');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setManualLocation(coords);
+        if (
+          onLocationUpdate &&
+          JSON.stringify(prevLocationRef.current) !== JSON.stringify(coords)
+        ) {
+          onLocationUpdate(coords);
+          prevLocationRef.current = coords;
+          setShowMap(true);
+        }
+      },
+      (err) => {
+        alert('위치 정보를 가져오는 데 실패했습니다.');
+        console.error(err);
+      }
+    );
+  };
+
+  const handleRefreshLocation = () => {
+    window.location.reload();
   };
 
   return (
     <div className="location-page">
-      <h2>지도와 현재 위치</h2>
       
       {/* 상태 표시 */}
       <div className="status-container">
@@ -42,20 +72,21 @@ const LocationPage = () => {
         {error && (
           <div className="status error">
             ❌ {error}
-          </div>
-        )}
-        
-        {sendStatus && (
-          <div className={`status ${sendStatus.type}`}>
-            {sendStatus.type === 'success' ? '✅' : '❌'} {sendStatus.message}
+            <button onClick={handleRefreshLocation} className="retry-button">
+              다시 시도
+            </button>
           </div>
         )}
       </div>
 
-      {/* 현재 위치 정보 */}
+      <button onClick={fetchManualLocation} className="retry-button">
+        📍 내 위치 찾기
+      </button>
+
+      {/* 현재 위치 정보
       {location.lat && location.lng && (
         <div className="location-info">
-          <h3>현재 위치 정보</h3>
+          <h3>위치 정보</h3>
           <div className="location-details">
             <div>
               <span className="label">위도:</span>
@@ -66,21 +97,15 @@ const LocationPage = () => {
               <span className="value">{location.lng.toFixed(6)}</span>
             </div>
           </div>
-          <button
-            onClick={() => handleLocationSend(location.lat, location.lng)}
-            disabled={isSending}
-            className={`send-location-button ${isSending ? 'sending' : ''}`}
-          >
-            {isSending ? '찾는 중...' : '내 위치 찾기'}
-          </button>
         </div>
-      )}
+      )} */}
 
       {/* 지도 */}
-      <div className="map-section">
-        <h3>지도</h3>
-        <Map location={location} onLocationSend={handleLocationSend} />
-      </div>
+      {showMap && location.lat && location.lng && (
+        <div className="map-section square">
+          <Map location={location} />
+        </div>
+      )}
     </div>
   );
 };

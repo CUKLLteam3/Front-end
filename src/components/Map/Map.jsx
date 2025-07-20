@@ -1,3 +1,4 @@
+// src/components/Map/Map.jsx
 import React, { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -15,17 +16,26 @@ L.Icon.Default.mergeOptions({
 // 지도 중심을 변경하는 컴포넌트
 const ChangeMapView = ({ center }) => {
   const map = useMap();
-  
+
   useEffect(() => {
-    if (center[0] && center[1]) {
-      map.setView(center, 15);
+    const currentCenter = map.getCenter();
+    const targetLat = Number(center[0]);
+    const targetLng = Number(center[1]);
+
+    if (
+      !isNaN(targetLat) &&
+      !isNaN(targetLng) &&
+      (Math.abs(currentCenter.lat - targetLat) > 0.0001 ||
+       Math.abs(currentCenter.lng - targetLng) > 0.0001)
+    ) {
+      map.setView([targetLat, targetLng], 15);
     }
   }, [center, map]);
-  
+
   return null;
 };
 
-const Map = ({ location, onLocationSend }) => {
+const Map = ({ location }) => {
   const mapRef = useRef(null);
   const mapCenter = location.lat && location.lng 
     ? [location.lat, location.lng] 
@@ -51,12 +61,6 @@ const Map = ({ location, onLocationSend }) => {
                 <p><strong>현재 위치</strong></p>
                 <p>위도: {location.lat.toFixed(6)}</p>
                 <p>경도: {location.lng.toFixed(6)}</p>
-                <button
-                  onClick={() => onLocationSend(location.lat, location.lng)}
-                  className="send-button"
-                >
-                  위치 전송
-                </button>
               </div>
             </Popup>
           </Marker>
