@@ -8,38 +8,38 @@ function AirDataDisplay({ lat, lon, onDataUpdate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-useEffect(() => {
-  if (!lat || !lon) return;
+  useEffect(() => {
+    if (!lat || !lon) return;
 
-  // 요청 URL 생성
-  const url = `${API_URL}${API_ENDPOINTS.AIR_QUALITY}?lat=${lat}&lon=${lon}`;
+    // 요청 URL 생성
+    const url = `${API_URL}${API_ENDPOINTS.AIR_QUALITY}?lat=${lat}&lon=${lon}`;
 
-  // 같은 lat/lon으로 이미 요청한 경우 중복 요청 방지
-  if (data?.lat === lat && data?.lon === lon) return;
+    // 같은 lat/lon으로 이미 요청한 경우 중복 요청 방지
+    if (data?.lat === lat && data?.lon === lon) return;
 
-  const fetchAirQuality = async () => {
-    setLoading(true);
-    setError(null);
+    const fetchAirQuality = async () => {
+      setLoading(true);
+      setError(null);
 
-    try {
-      const result = await apiCall(url);
+      try {
+        const result = await apiCall(url);
 
-      // 요청에 사용된 좌표를 함께 저장 (중복 체크용)
-      setData({ ...result, lat, lon });
+        // 요청에 사용된 좌표를 함께 저장 (중복 체크용)
+        setData({ ...result, lat, lon });
 
-      if (onDataUpdate && result) {
-        onDataUpdate(result);
+        if (onDataUpdate && result) {
+          onDataUpdate(result);
+        }
+      } catch (err) {
+        console.error('대기질 데이터 조회 실패:', err);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('대기질 데이터 조회 실패:', err);
-      setError('데이터를 불러오는 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchAirQuality();
-}, [lat, lon]);
+    fetchAirQuality();
+  }, [lat, lon]);
 
   const getLevel = (value, type) => {
     const num = parseFloat(value);
@@ -71,8 +71,7 @@ useEffect(() => {
 
   if (!data) return null;
 
-  // pm2.5 또는 pm25 키 모두 대응
-
+  // PM2.5 제거, PM10과 오존만 표시
   const pm10 = getLevel(data.pm10, 'pm10');
   const o3 = getLevel(data.o3, 'ozone');
 
