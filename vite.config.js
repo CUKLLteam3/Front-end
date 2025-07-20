@@ -6,13 +6,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/air-quality': {
-        target: 'http://158.180.65.104:8080',
+        target: 'http://158.180.65.104',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path
       },
       '/chat': {
-        target: 'http://158.180.65.104:8080',
+        target: 'http://158.180.65.104',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path

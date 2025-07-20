@@ -6,11 +6,10 @@ import GuidanceDisplay from './components/GuidanceDisplay/GuidanceDisplay';
 import './App.css';
 
 function App() {
-  // 상태 관리
+  // 상태 관리 (PM2.5 제거)
   const [location, setLocation] = useState({ lat: null, lon: null });
   const [airData, setAirData] = useState({ 
-    pm10: null, 
-    pm25: null, 
+    pm10: null,
     o3: null,
     stationName: null 
   });
@@ -24,12 +23,11 @@ function App() {
     });
   };
 
-  // AirDataDisplay에서 대기질 데이터 받기
+  // AirDataDisplay에서 대기질 데이터 받기 (PM2.5 제거)
   const handleAirDataUpdate = (data) => {
     console.log('대기질 데이터 업데이트:', data);
     setAirData({
       pm10: data.pm10,
-      pm25: data.pm25 || data["pm2.5"], // API 응답 키 이름 대응
       o3: data.o3,
       stationName: data.stationName
     });

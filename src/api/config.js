@@ -1,6 +1,8 @@
 // src/api/config.js
-// 개발 환경에서는 프록시 사용
-export const API_URL ='http://158.180.65.104';
+// 환경별 API URL 설정
+export const API_URL = process.env.NODE_ENV === 'production'
+  ? '/api/proxy'  // Vercel 프로덕션: Vercel API Routes 사용
+  : '';           // 로컬 개발: Vite 프록시 사용 (빈 문자열)
 
 export const API_ENDPOINTS = {
   AIR_QUALITY: '/air-quality',
@@ -11,6 +13,8 @@ export const API_ENDPOINTS = {
 // API 호출 헬퍼 함수
 export const apiCall = async (url, options = {}) => {
   try {
+    console.log('API 호출 URL:', url); // 디버깅용
+    
     const response = await fetch(url, {
       ...options,
       headers: {
